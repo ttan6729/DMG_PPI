@@ -1,0 +1,2 @@
+data/SHS27k.seqs.tsv
+data/SHS27k.actions.txt
