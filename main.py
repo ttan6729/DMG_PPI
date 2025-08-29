@@ -25,8 +25,7 @@ def str2bool(v):
 def train(model,data,loss_fn,optimizer,device,result_prefix=None,batch_size=512,epochs=100,scheduler=None,global_best_f1=0.0,args=None):
 	with open(result_prefix+'.txt','w') as f:
 		f.write('')
-	#torch.backends.cudnn.benchmark =  True
-	#torch.backends.cudnn.enabled =  True
+
 
 	best_f1,best_epoch = 0.0,0
 	result = None
@@ -45,8 +44,7 @@ def train(model,data,loss_fn,optimizer,device,result_prefix=None,batch_size=512,
 				train_edge_id = data.train_mask[step*batch_size:]
 			else:
 				train_edge_id = data.train_mask[step*batch_size:(step+1)*batch_size]
-			
-			#output = model(x=data.embed1,edge_index=data.edge2,sparse_adj=data.sparse_adj2,edge_id=train_edge_id) #edge index: list
+
 			output = model(data=data,edge_id=train_edge_id)
 			label = data.edge_attr[train_edge_id]
 			label = label.type(torch.FloatTensor).to(device)
@@ -87,7 +85,6 @@ def train(model,data,loss_fn,optimizer,device,result_prefix=None,batch_size=512,
 		valid_label_list = torch.cat(valid_label_list, dim=0)
 
 		saved_pred = torch.cat(saved_pred,dim=0)
-		#print(saved_pred.size())
 
 		metrics = utils.Metrictor_PPI(valid_pre_result_list, valid_label_list)
 		record = metrics.append_result(result_prefix+'.txt',epoch+1,train_loss_sum,valid_loss_sum)
@@ -104,40 +101,27 @@ def train(model,data,loss_fn,optimizer,device,result_prefix=None,batch_size=512,
 			best_epoch = epoch
 			result =  {'pred':saved_pred,'actual':valid_label_list}
 			if args.aly:
-				#torch.save(model.state_dict(),result_prefix+'_weights.pt' )
 				torch.save(model.state_dict(),result_prefix+'.ckpt' )
-			#torch.save()
-
-		if args.aly is True and epoch == (epochs-1):
-			model(data=data,edge_id=data.val_mask,aly=True,output=args.o)
-			model.aly_feature_update(data=data,edge_id=data.val_mask,output=args.o)
-			model.aly_contribution(data=data,edge_id=data.val_mask,output=args.o)
 
 	
 	if global_best_f1 < best_f1:
 		global_best_f1 = best_f1
 		torch.save(result,result_prefix+'.pt')
 
-	#if args.aly:
-		#model.load_state_dict(torch.load(result_prefix+'_weights.pt', weights_only=True))
-		#aly_data = model.compute_hiearchical_level(data=data)
-
-	#model.check_weight()
 	return global_best_f1, aly_data
 
 def get_args_parser():
 	parser = argparse.ArgumentParser('MRPPI',add_help=False)
 	parser.add_argument('-m',default=None,type=str,help='')
-	parser.add_argument('-t', default=None, type=str,help='for test distintct models')
-	parser.add_argument('-i',default=None,type=str,help='path for sequnce and relation file')
+	parser.add_argument('-t', default='DMG', type=str,help='model name')
+	parser.add_argument('-i',default=None,type=str,help='path of sequnce and relation file')
+	parser.add_argument('-i1',default=None,type=str,help='path of sequnce file')
+	parser.add_argument('-i2',default=None,type=str,help='path of relation file')
 	parser.add_argument('-i3',default=None,type=str,help='file path of training and test set (for read mode)')
 	parser.add_argument('-i4',default=None,type=str,help='prefix of the path of embedding of protetin structure')
 	parser.add_argument('-i5',default=None,type=str,help='prefix of the path of protein structure')
-
-	#parser.add_argument('-i4',default='../data/map1.csv',type=str,help='file path for map STRING id to uniref id')
 	parser.add_argument('-struct_path',default='/home/user1/code/protein/data/structure_data/STRING/',type=str,help='the directory that contain pdb file')
 	parser.add_argument('-o',default='output',type=str)
-	parser.add_argument('-s',default=50,type=int,help='')
 	parser.add_argument('-e',default=50,type=int,help='epochs')
 	parser.add_argument('-b', default=256, type=int,help='batch size')
 	parser.add_argument('-ln', default=3, type=int,help='graph layer num')
@@ -153,8 +137,7 @@ def get_args_parser():
 	parser.add_argument('-pr',default=0.0,type=float,help='perturbation ratio')
 	parser.add_argument('-lr',default=0.0,type=float,help='label perturbation ratio')
 	parser.add_argument('-info',default=None,type=str,help='additional information')
-	parser.add_argument('-ss',default=3,type=int,help='sampleSize')
-	parser.add_argument('-chemical_fea',default=True,type=str2bool,help='use checmical features')
+
 
 	return parser
 
@@ -167,14 +150,12 @@ def load_prot_struct(node_file,edge_file):
 
 
 
-#python3 aly.py -m read -t IHP24 -i 27K.txt -i3  /home/user1/code/STRING/split/27K_bfs.json -i4 features/27K  -ln 3 -e 100 -o ../result/IHP24_test5
+#python3 main.py -m bfs -t DMG -i 27K.txt -i4 features/27K  -ln 3 -e 10 -o ../result/test
 
 def main(args):
 
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-	#print(torch.cuda.is_available())
 	print(f'device: {device}')
-	#cprint('Note, the preprocessing of protein structure requires pdb2pqr3.6.2 and apbs3.0','red')
 	
 	if args.i:
 		with open(args.i,'r') as f:
@@ -186,8 +167,9 @@ def main(args):
 			print('output name already exists')
 			exit()
 
-#python3 main.py -m test ../method/test.txt  -i4 features/test
+
 	if args.m == 'data':
+		print('Note, the preprocessing of protein structure requires pdb2pqr3.6.2 and apbs3.0','red')
 		ppi_data.compute_chemical_data(args)
 		ppi_data.compte_physical_data(args)
 		return
@@ -201,7 +183,7 @@ def main(args):
 		PPIData.compute_seq_identity()
 		exit()
  
-	if args.t  == 'DMG_PPI': #ablation test with only alignment message passing  
+	if args.t  == 'DMG': 
 		model=Models.DMG_PPI(data.embed1.shape[-1]).to(device)
 
 
