@@ -8,7 +8,9 @@ This repository contains an official implementation of DMG_PPI
 - numpy1.26.4
 ----
 ### Dataset
-To test the performance of DMG-PPI, download the processed dataset from https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing and extract the ZIP file in the same directory as main.py.### Usage
+To test the performance of DMG-PPI, download the processed dataset from https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing and extract the ZIP file in the same directory as main.py.
+
+### Usage
 ```
 usage: PPIM [-h] [-m M] [-t T] [-i I] [-i1 I1] [-i2 I2] [-i3 I3] [-i4 I4] [-i5 I5] [-struct_path STRUCT_PATH] [-o O] [-e E] [-b B] [-ln LN] [-Loss LOSS] [-ff FF] 
 
