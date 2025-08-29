@@ -48,17 +48,16 @@ class PPIData(object):
 			node_data = [torch.nn.functional.normalize(x) for x in node_data]
 			edge_data = [torch.tensor(x,dtype=torch.long).transpose(0,1) for x in edge_data]
 			struct_data = ProteinDatasetTorch(node_data,edge_data)
-			#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-			#struct_data = torch_geometric.loader.DataLoader(struct_data,batch_size=512,shuffle=False)
+
 			fea_dim = node_data[0].size()[1]
 		
 		self.typeNum = len(self.interList[0])
 		self.prot_encode = None #torch.tensor(seqEncoding(self.seqs,args.L),dtype=torch.float)
 		prot_node, prot_edge, prot_kneg = read_struct_data(args.i4,args.i)		
 		self.prot_embed = embed_prot(prot_node, prot_edge, prot_kneg)
-		if args.chemical_fea is True:
-			prot_embed2 = embed_prot2(args.i4)
-			self.prot_embed = torch.cat([self.prot_embed,prot_embed2],dim=1)
+
+		prot_embed2 = embed_prot2(args.i4)
+		self.prot_embed = torch.cat([self.prot_embed,prot_embed2],dim=1)
 
 
 		self.split_dict = {}
@@ -77,18 +76,13 @@ class PPIData(object):
 			self.remove_label(args.lr)
 
 		edge_index1 = create_edge_indices(self.edgeList,self.interList,len(self.interList[0]))#the edge list for each individual graph
-		# self.neighList, self.sampledNeighList = generate_neighList(self.seqsNum,edge_index1,self.typeNum,sampleSize = args.ss) #neihgbour list of each protein
-		#self.sampledNeighList = torch.tensor(self.sampledNeighList,dtype=torch.int)
+
 		edge_index1 = [torch.tensor(e,dtype=torch.long).transpose(0,1) for e in edge_index1]
-		# k_hop_edge_index = []
-		# for i,edge_index in enumerate(edge_index1):
-		# 	k_hop_edge_index.append(compute_k_hop_edge_index_list(edge_index,self.seqsNum,4))
+
 		sparse_adj1 = [create_sparse_tensor(e,self.seqsNum) for e in edge_index1]
 		edge_index2 = torch.tensor(self.edgeList, dtype=torch.long).transpose(0,1) #the overall edge list
 
-		#empty_tensor = torch.zeros(self.prot_embed.size()[1:]).unsqueeze(0)
-		#self.prot_embed = torch.cat((self.prot_embed,empty_tensor))
-		#sparse_adj2 = create_sparse_tensor(edge_index2,self.seqsNum)
+
 		self.data = torch_geometric.data.Data(embed1=self.prot_embed,encode1=self.prot_encode,edge1=edge_index1,edge2=edge_index2,struct_data = struct_data,fea_dim =fea_dim,edge_attr = torch.tensor(self.interList, dtype=torch.long),nameList=self.nameList,pairNameList = self.pairList) #sampledNeighList = self.sampledNeighList,
 		self.data.train_mask = self.split_dict['train_index']
 		self.data.val_mask = self.split_dict['valid_index']
@@ -136,12 +130,7 @@ class PPIData(object):
 		result = []
 		print(len(self.edgeList))
 		count = 0
-		# for id1,id2 in self.edgeList:
-		# 	identity = compute_identity(self.seqs[id1],self.seqs[id2])
-		# 	result.append(identity)
-		# 	count += 1
-		# 	if count%1000 == 0:
-		# 		print(f'{count} ppis')
+
 		
 		for i in self.split_dict['valid_index']:
 			id1,id2 = self.edgeList[i]
@@ -173,8 +162,6 @@ class PPIData(object):
 			self.prot_strut_data.append(prot_g)
 
 		return
-		#self.s2p =  #map id of STRING database to uniprot
-		#self.seqFeature = seqEmbedding(self.seqs)
 
 	def save_valid_set(self,args):
 		index2pair = {v: k for k, v in self.pair2index.items()} 
@@ -218,9 +205,7 @@ class PPIData(object):
 			if len(queue) == 0:
 				print('bfs split meet root level 0, terminate process')
 				exit()
-				# while(random_index in visited):
-				# 	random_index = random.randint(0, node_num-1)
-				# queue.append(random_index)
+
 			cur_node = queue.pop(0) 
 			visited.append(cur_node)
 			for edge_index in node_to_edge_index[cur_node]:
@@ -450,35 +435,7 @@ def generate_neighList(nodeNum, edgeList,typeNum=7,sampleSize = 4):
 		sampledNeighList.append(tmp)	
 	return neighList, sampledNeighList
 
-import time
-def compute_k_hop_edge_index_list(edge_index,node_num,k=3):
 
-	weight = torch.ones(edge_index.size(1))
-
-	adj = torch.sparse_coo_tensor(edge_index,values=weight,size=(node_num,node_num))
-	cur_k_hop = adj
-	k_hop_indices = [edge_index]
-	start = time.time()
-	for i in range(k-1):
-		cur_k_hop = torch.sparse.mm(adj, cur_k_hop)
-		adj_khop = cur_k_hop.coalesce()
-		indices = adj_khop.indices()
-		values = adj_khop.values()
-		mask = indices[0] != indices[1]
-		indices = indices[:, mask]
-		k_hop_indices.append(indices)
-
-	# 	print(f'{i+2} hop')	
-	# 	print(indices.size())
-	# 	print(indices[0][1000:1020])
-	# 	print(indices[1][1000:1020])
-
-	# end = time.time()
-	# mins = (end - start)/60
-	# print(f'it takes {mins} mins to compute neighbourhoods')
-	# exit()
-
-	return k_hop_indices
 
 def readInteraction(relPath,name2index,level=3,seqsLen=None):
 	labelNum = len(labelDir)
@@ -896,37 +853,6 @@ def w2v(paddedSeq ,modelPath=None,size=20,maxLen=512):
 	return np.array(result)
 
 
-# def atom2vec(atmosList,modelPath='process/vec5_atom.txt'):
-# 	with open(modelPath,'r') as file:
-# 		for line in file:
-# 			line = re.split(' |\t',line)
-# 			model[line[0]] = np.array([float(x) for x in line[1:]])
-# 			if size is None:
-# 				size = len(line[1:])
-# 	result = []
-# 	for atmos in atmoList:
-# 		tmp = []
-# 		for atom in atmos:
-# 			tmp.append(model[atom])
-# 		result.append(tmp)
-# 	return result
-
-
-# def seqEmbedding(seqs:list,w2vPath=None,PSSMPath=None):
-# 	fMatrix = embedding.CalAAC(seqs)
-# 	fMatrix = np.concatenate((fMatrix,embedding.CalCJ(seqs)),axis=1) #dimension 343
-# 	#fMatrix = np.concatenate((fMatrix,embedding.CalDPC(seqs)),axis=1) #dimension 400
-# 	fMatrix = np.concatenate((fMatrix,embedding.CalPAAC(seqs)),axis=1)  #dimension 50
-# 	fMatrix = np.concatenate((fMatrix,embedding.CalCTDT(seqs)),axis=1) #dimension 39
-# 	fMatrix = np.concatenate((fMatrix,embedding.CalProtVec(seqs)),axis=1) #dimension 1
-# 	fMatrix = np.concatenate((fMatrix,embedding.CalPos(seqs)),axis=1)  #dimension 1
-# 	fMatrix = fMatrix.astype(float)
-
-# 	fMatirx = utils.normalize(fMatrix)
-
-# 	return fMatrix
-
-
 def remove_link(num,rate):
 	#indices = [0,1,3,5,7,11,22]
 	indices = [i for i in range(num)]
@@ -940,10 +866,8 @@ from Bio import pairwise2
 from Bio.Align import substitution_matrices
 
 def compute_identity(seq1, seq2, gap_open=-10, gap_extend=-0.5):
-    # ✅ 加载 BLOSUM62 替代原 SubsMat
     matrix = substitution_matrices.load("BLOSUM62")
 
-    # 全局比对，使用 substitution matrix 和 gap penalty
     alignments = pairwise2.align.globalds(seq1, seq2, matrix, gap_open, gap_extend, one_alignment_only=True)
 
     if not alignments:
@@ -952,7 +876,6 @@ def compute_identity(seq1, seq2, gap_open=-10, gap_extend=-0.5):
     aln = alignments[0]
     aln_seq1, aln_seq2 = aln.seqA, aln.seqB
 
-    # identity = 相同残基数 / 非 gap 比对长度
     matches = sum(a == b for a, b in zip(aln_seq1, aln_seq2) if a != '-' and b != '-')
     aligned_length = sum(1 for a, b in zip(aln_seq1, aln_seq2) if a != '-' and b != '-')
 
@@ -961,14 +884,3 @@ def compute_identity(seq1, seq2, gap_open=-10, gap_extend=-0.5):
 
     identity = matches / aligned_length
     return identity
-
-
-# from Bio import pairwise2
-# from Bio.pairwise2 import format_alignment
-# def compute_identity(seq1,seq2):
-# 	alignments = pairwise2.align.globalxx(seq1, seq2)
-# 	best_alignment = alignments[0]
-# 	aligned_seq1, aligned_seq2 = best_alignment.seqA, best_alignment.seqB
-# 	matches = sum(a == b for a, b in zip(aligned_seq1, aligned_seq2))
-# 	identity = matches / len(aligned_seq1)
-# 	return identity

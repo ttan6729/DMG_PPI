@@ -50,10 +50,8 @@ class DMG_PPI(nn.Module):
 
 		out_dim = int(hidden_dim/16)
 		for i in range(class_num):
-			self.fc_list.append(generate_classifier1(fc_dim*3,out_dim))
-
+			self.fc_list.append(generate_classifier(fc_dim*3,out_dim))
 		self.classifier = nn.Linear(out_dim*class_num,class_num)
-
 
 		return
 
@@ -65,8 +63,7 @@ class DMG_PPI(nn.Module):
 		node_id = edge_index[:, edge_id]
 		prot_embed = []
 		for i in range(self.class_num):
-			cur_embed = [] #[self.lins[i][0](x)]	
-			#tmp = self.graph_layers[i][j](edge_index_to_adj(edges[i],node_num),tmp) #)
+			cur_embed = [] 
 			tmp = x
 			for j in range(self.layer_num):
 				tmp = self.graph_layers[i][j](tmp,edges[i])
@@ -200,7 +197,7 @@ class AMP_Model(nn.Module):
 
 		out_dim = int(hidden_dim/16)
 		for i in range(class_num):
-			self.fc_list.append(generate_classifier1(fc_dim*3,out_dim))
+			self.fc_list.append(generate_classifier(fc_dim*3,out_dim))
 
 		self.classifier = nn.Linear(out_dim*class_num,class_num)
 		return
@@ -274,7 +271,7 @@ class DMP_Model(nn.Module):
 
 		out_dim = int(hidden_dim/16)
 		for i in range(class_num):
-			self.fc_list.append(generate_classifier1(fc_dim*3,out_dim))
+			self.fc_list.append(generate_classifier(fc_dim*3,out_dim))
 
 		self.classifier = nn.Linear(out_dim*class_num,class_num)
 		return
@@ -952,4 +949,13 @@ def get_classifier(hidden_layer,class_num,feature_fusion):
 		fc = nn.Linear(2*hidden_layer,class_num)
 	elif feature_fusion == 'mul':
 		fc = nn.Linear(1*hidden_layer,class_num)
+	return fc
+
+def generate_classifier(fc_dim,out_dim):
+	fc = nn.Sequential(
+		  nn.Linear(fc_dim,int(fc_dim/2)),
+		  nn.ReLU(),
+		  nn.Linear(int(fc_dim/2),int(fc_dim/4)),
+		  nn.ReLU(),
+		  nn.Linear(int(fc_dim/4),out_dim))
 	return fc
