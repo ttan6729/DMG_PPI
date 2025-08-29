@@ -5,7 +5,7 @@ This repository contains an official implementation of DMG_PPI
 - python3.11
 - torch2.1.2
 - dgl 2.3.0+cu121
-- numpy1.26.4py
+- numpy1.26.4
 ----
 ### Usage
 ```
