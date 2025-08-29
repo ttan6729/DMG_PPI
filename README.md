@@ -4,7 +4,7 @@ This repository contains an official implementation of DMG_PPI
 ## Environments
 - python3.11
 - torch2.1.2
-- dgl 2.3.0+cu121
+- dgl 2.3.0+cuda121
 - numpy1.26.4
 ----
 ### Dataset
