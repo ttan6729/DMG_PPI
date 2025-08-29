@@ -1,4 +1,4 @@
-# DMG_PPI-dual channel framework for learning compelx interaction patterns and PPI prediction
+# DMG-PPI, dual channel framework for learning compelx interaction patterns and PPI prediction
 This repository contains an official implementation of DMG_PPI 
 ----
 ## Environments
@@ -7,7 +7,8 @@ This repository contains an official implementation of DMG_PPI
 - dgl 2.3.0+cu121
 - numpy1.26.4
 ----
-### Usage
+### Dataset
+To test the performance of DMG-PPI, download the processed dataset from https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing and extract the ZIP file in the same directory as main.py.### Usage
 ```
 usage: PPIM [-h] [-m M] [-t T] [-i I] [-i1 I1] [-i2 I2] [-i3 I3] [-i4 I4] [-i5 I5] [-struct_path STRUCT_PATH] [-o O] [-e E] [-b B] [-ln LN] [-Loss LOSS] [-ff FF] 
 
@@ -31,5 +32,4 @@ options:
 python3 main.py -m bfs -t DMG -i 27K.txt -i4 features/27K  -ln 3 -e 100 -o ../result/test
 python3 main.py -m bfs -t DMG -i1 data/SHS27k.seqs.tsv -i2 data/SHS27k.actions.txt -i4 features/27K  -ln 3 -e 100-o ../result/test
 ```
-### Source file
-The pre-computed protein graph of proteins in SHS27K and SHS148K is available at https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing
+
