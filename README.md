@@ -28,7 +28,7 @@ options:
 
 ```
 ### Sample command for training and testing
-To test the performance of DMG-PPI, download the processed dataset from \href{https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing}{here} and extract the ZIP file in the same directory as main.py.
+To test the performance of DMG-PPI, download the processed dataset from [here](https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing), and extract the ZIP file in the same directory as main.py.
 
 ```
 python3 main.py -m bfs -t DMG -i 27K.txt -i4 features/27K  -ln 3 -e 100 -o ../result/test
