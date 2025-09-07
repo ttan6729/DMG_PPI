@@ -27,9 +27,10 @@ options:
   -Loss LOSS    loss function
 
 ```
-### Sample command for training and testing
+### Training and testing
 To test the performance of DMG-PPI, download the processed dataset from [here](https://drive.google.com/file/d/1gj00JePblQfEakdcol4nsvT1WZcm8vRh/view?usp=sharing), and extract the ZIP file in the same directory as main.py.
 
+Sample command
 ```
 python3 main.py -m bfs -t DMG -i 27K.txt -i4 features/27K  -ln 3 -e 100 -o ../result/test
 python3 main.py -m bfs -t DMG -i1 data/SHS27k.seqs.tsv -i2 data/SHS27k.actions.txt -i4 features/27K  -ln 3 -e 100-o ../result/test
