@@ -1,4 +1,4 @@
-# DMG-PPI, dual channel framework for learning compelx interaction patterns and PPI prediction
+# DMG-PPI, dual channel framework for learning complex interaction patterns and PPI prediction
 This repository contains an official implementation of DMG_PPI 
 ----
 ## Environments
