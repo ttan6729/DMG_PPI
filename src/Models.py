@@ -29,7 +29,7 @@ class DMG_PPI(nn.Module):
 		self.graph_layers = torch.nn.ModuleList()
 		self.lins = torch.nn.ModuleList()
 		self.norms = torch.nn.ModuleList()
-		powers = [(i+1) for i in range(self.layer_num)] #[1,2,3,4]
+		powers = [(i+1) for i in range(self.layer_num)]
 		dims = [input_dim] + self.layer_num * [hidden_dim]
 
 		#self.layer_num = 2
@@ -51,7 +51,9 @@ class DMG_PPI(nn.Module):
 		out_dim = int(hidden_dim/16)
 		for i in range(class_num):
 			self.fc_list.append(generate_classifier(fc_dim*3,out_dim))
+
 		self.classifier = nn.Linear(out_dim*class_num,class_num)
+
 
 		return
 
@@ -63,7 +65,8 @@ class DMG_PPI(nn.Module):
 		node_id = edge_index[:, edge_id]
 		prot_embed = []
 		for i in range(self.class_num):
-			cur_embed = [] 
+			cur_embed = [] #[self.lins[i][0](x)]	
+			#tmp = self.graph_layers[i][j](edge_index_to_adj(edges[i],node_num),tmp) #)
 			tmp = x
 			for j in range(self.layer_num):
 				tmp = self.graph_layers[i][j](tmp,edges[i])
@@ -941,7 +944,7 @@ class AsymmetricLossOptimized(nn.Module):
 		return -self.loss.sum()
 
 
-def get_classifier(hidden_layer,class_num,feature_fusion):
+def get_classifier(hidden_layer,class_num,feature_fusion='CnM'):
 	fc = None
 	if feature_fusion == 'CnM':
 		fc = nn.Linear(3*hidden_layer,class_num)
